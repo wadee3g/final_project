@@ -43,7 +43,7 @@ class _SignupScreenState extends State<SignupScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
-                  "sign up",
+                  "Sign up",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 TextFieldWidget(
@@ -63,6 +63,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       email: emailController.text,
                       password: passwordController.text,
                     );
+                    context.pushAndDelete(LoginScreen());
                   },
                   child: Text("Sign up"),
                 ),
