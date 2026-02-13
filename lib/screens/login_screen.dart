@@ -1,4 +1,3 @@
-
 import 'package:final_project/extension/nav.dart';
 import 'package:final_project/screens/home_screen.dart';
 import 'package:final_project/screens/signup_screen.dart';

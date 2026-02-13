@@ -58,7 +58,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   isObscure: true,
                 ),
                 ElevatedButton(
-                  onPressed: () async{
+                  onPressed: () async {
                     await Database().signUp(
                       email: emailController.text,
                       password: passwordController.text,

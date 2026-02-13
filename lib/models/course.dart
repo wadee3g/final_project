@@ -2,6 +2,7 @@ class Course {
   String? image;
   String? title;
   double? rating;
+  String? category;
 
   Course({this.image, this.title, this.rating});
 
@@ -16,6 +17,7 @@ class Course {
     data['image'] = image;
     data['title'] = title;
     data['rating'] = rating;
+    data['category'] = category;
     return data;
   }
 }
