@@ -1,23 +1,27 @@
 class Course {
-  String? image;
+  int? id;          // أضفنا الـ id (مهم جداً للحذف)
   String? title;
+  String? image;
+  String? category; // أضفنا التصنيف (علمي/ديني)
   double? rating;
-  String? category;
 
-  Course({this.image, this.title, this.rating});
+  Course({this.id, this.title, this.image, this.category, this.rating});
 
   Course.fromJson(Map<String, dynamic> json) {
-    image = json['image'];
+    id = json['id'];             // قراءة الـ id من قاعدة البيانات
     title = json['title'];
-    rating = json['rating'];
+    image = json['image'];
+    category = json['category']; // قراءة التصنيف
+    rating = json['rating'] != null ? double.parse(json['rating'].toString()) : 0.0;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['image'] = image;
+    // لا نرسل الـ id عند الإضافة لأنه يتولد تلقائياً
     data['title'] = title;
-    data['rating'] = rating;
+    data['image'] = image;
     data['category'] = category;
+    data['rating'] = rating;
     return data;
   }
 }

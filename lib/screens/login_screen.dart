@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
 
                       if (context.mounted) {
-                        context.push(HomeScreen());
+                        context.pushAndDelete(HomeScreen());
                       }
                     } catch (e) {
                       ScaffoldMessenger.of(
