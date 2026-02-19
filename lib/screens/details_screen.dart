@@ -19,25 +19,33 @@ class DetailsScreen extends StatelessWidget {
                 course.image ?? "",
                 width: double.infinity,
                 fit: BoxFit.contain,
-                errorBuilder: (c,o,s)=> Icon(Icons.broken_image, size: 100),
+                errorBuilder: (c,o,s)=> const Icon(Icons.broken_image, size: 100),
               ),
             ),
-            SizedBox(height: 20),
-            Text(course.title ?? "", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-            Text("القسم: ${course.category}", style: TextStyle(fontSize: 18, color: Colors.grey)),
-            SizedBox(height: 40),
+            const SizedBox(height: 20),
+            Text(course.title ?? "", style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            Text("القسم: ${course.category}", style: const TextStyle(fontSize: 18, color: Colors.grey)),
+            const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                icon: Icon(Icons.add_shopping_cart),
-                label: Text("إضافة للسلة"),
-                style: ElevatedButton.styleFrom(padding: EdgeInsets.all(15)),
+                icon: const Icon(Icons.add_shopping_cart),
+                label: const Text("إضافة للسلة"),
+                style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(15)),
                 onPressed: () async {
+                  // هذا السطر يتصل بقاعدة البيانات ويرسل العنوان والصورة لجدول السلة (cart)
                   await Database().addToCart(
-                    title: course.title!,
-                    image: course.image!,
+                    title: course.title ?? "بدون عنوان",
+                    image: course.image ?? "",
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("تمت الإضافة للسلة")));
+                  
+                  // فحص أمني: نتأكد أن المستخدم لم يغلق الشاشة قبل أن ينتهي الإنترنت من الإرسال
+                  if (!context.mounted) return; 
+                  
+                  // إظهار رسالة النجاح
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("تمت الإضافة للسلة بنجاح!"))
+                  );
                 },
               ),
             )
