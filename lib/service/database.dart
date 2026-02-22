@@ -26,14 +26,14 @@ class Database {
   Future<void> addCourse({
     required String title,
     required String image,
-
     required String category,
+    required String description, // أضفنا هذا السطر
   }) async {
     await supabase.from("course").insert({
       "title": title,
       "image": image,
-
       "category": category,
+      "description": description, // أضفنا هذا السطر
     });
   }
 

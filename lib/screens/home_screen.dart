@@ -1,5 +1,6 @@
 import 'package:final_project/models/course.dart';
 import 'package:final_project/service/database.dart';
+import 'package:final_project/widgets/text_field_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project/screens/cart_screen.dart';
 import 'package:final_project/screens/details_screen.dart';
@@ -12,12 +13,24 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // تم حذف متغيرات الإضافة (Controllers) لأن المستخدم العادي لا يجب أن يضيف كتباً للتطبيق
+  var titleController = TextEditingController();
+  var imageController = TextEditingController();
+  var descriptionController = TextEditingController(); // متحكم الوصف الجديد
+
+  String selectedCategory = 'علمية';
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    imageController.dispose();
+    descriptionController.dispose(); // تنظيف متحكم الوصف
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 2, 
       child: Scaffold(
         appBar: AppBar(
           title: const Text("متجر الكتب"),
@@ -31,14 +44,12 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(
               icon: const Icon(Icons.shopping_cart),
               onPressed: () {
-                // // هذا السطر ينقلك للسلة عند الضغط على الأيقونة العلوية
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
               },
             )
           ],
         ),
         body: FutureBuilder(
-          // هنا نجلب البيانات من قاعدة البيانات لعرضها في المتجر
           future: Database().getCourse(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -48,29 +59,29 @@ class _HomeScreenState extends State<HomeScreen> {
               return Center(child: Text("حدث خطأ: ${snapshot.error}"));
             }
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text("المتجر فارغ حالياً"));
+              return const Center(child: Text("لا توجد كتب مضافة بعد"));
             }
 
             final allBooks = snapshot.data!;
-
-            // تصفية الكتب بناءً على القسم لعرضها في التبويب الصحيح
             final scienceBooks = allBooks.where((b) => b.category == 'علمية').toList();
             final religiousBooks = allBooks.where((b) => b.category == 'دينية').toList();
 
             return TabBarView(
               children: [
-                _buildBookGrid(scienceBooks),
+                _buildBookGrid(scienceBooks), 
                 _buildBookGrid(religiousBooks),
               ],
             );
           },
         ),
-        // تم حذف زر الـ FloatingActionButton بالكامل من هنا
+        floatingActionButton: FloatingActionButton(
+          child: const Icon(Icons.add),
+          onPressed: _showAddDialog,
+        ),
       ),
     );
   }
 
-  // دالة بناء شبكة الكتب (كما هي لم تتغير)
   Widget _buildBookGrid(List<Course> books) {
     if (books.isEmpty) {
       return const Center(child: Text("لا توجد كتب في هذا القسم"));
@@ -88,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
         final book = books[index];
         return InkWell(
           onTap: () {
-            // إرسال بيانات الكتاب المختار إلى شاشة التفاصيل
             Navigator.push(context, MaterialPageRoute(builder: (context) => DetailsScreen(course: book)));
           },
           child: Card(
@@ -116,6 +126,100 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  void _showAddDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return Dialog(
+              child: SingleChildScrollView( // أضفنا Scroll لتجنب مشكلة الكيبورد
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text("إضافة كتاب جديد", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 24),
+                      TextFieldWidget(
+                        hint: "عنوان الكتاب",
+                        icon: const Icon(Icons.book),
+                        controller: titleController,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFieldWidget(
+                        hint: "رابط الصورة",
+                        icon: const Icon(Icons.image),
+                        controller: imageController,
+                      ),
+                      const SizedBox(height: 12),
+                      // هذا هو حقل الوصف الجديد
+                      TextFieldWidget(
+                        hint: "وصف الكتاب",
+                        icon: const Icon(Icons.description),
+                        controller: descriptionController,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          const Text("القسم: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(width: 10),
+                          DropdownButton<String>(
+                            value: selectedCategory,
+                            items: ['علمية', 'دينية'].map((String val) {
+                              return DropdownMenuItem(value: val, child: Text(val));
+                            }).toList(),
+                            onChanged: (val) {
+                              setStateDialog(() {
+                                selectedCategory = val!;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () async {
+                          try {
+                            await Database().addCourse(
+                              title: titleController.text,
+                              image: imageController.text,
+                              category: selectedCategory,
+                              description: descriptionController.text, // نرسل الوصف لقاعدة البيانات
+                            );
+                            
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              setState(() {}); 
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("تمت الإضافة بنجاح"), backgroundColor: Colors.green),
+                              );
+                              
+                              titleController.clear();
+                              imageController.clear();
+                              descriptionController.clear();
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("فشل الإضافة: $e"), backgroundColor: Colors.red),
+                              );
+                            }
+                          }
+                        },
+                        child: const Text("حفظ الكتاب"),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
